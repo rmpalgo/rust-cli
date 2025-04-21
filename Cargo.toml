@@ -1,8 +1,9 @@
 [package]
-name = "grrs"
+name = "ratatui"
 version = "0.1.0"
 edition = "2018"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
+crossterm = { version = "0.28" } 
 anyhow = "1.0.82"

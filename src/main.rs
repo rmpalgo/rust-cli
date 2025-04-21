@@ -1,23 +1,47 @@
-use anyhow::{Context, Result};
-use clap::Parser;
+use std::io;
 
-#[derive(Parser)]
-struct Cli {
-    pattern: String, 
-    path: std::path::PathBuf,
-}
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+    terminal,
+};
 
-fn main() -> Result<()> {
-    let args = Cli::parse();
-
-    let content = std::fs::read_to_string(&args.path)
-    .with_context(|| format!("could not read file `{}`", args.path.display()))?;
-
-    for line in content.lines() {
-        if line.contains(&args.pattern) {
-            println!("{}", line);
+pub fn read_line() -> io::Result<String> {
+    let mut line = String::new();
+    loop {
+        if let Event::Key(KeyEvent {
+            code,
+            kind: KeyEventKind::Press,
+            ..
+        }) = event::read()?
+        {
+            match code {
+                KeyCode::Enter => {
+                    break;
+                }
+                KeyCode::Char(c) => {
+                    line.push(c);
+                }
+                _ => {}
+            }
         }
     }
 
-    Ok(())
+    Ok(line)
+}
+
+fn main() -> io::Result<()> {
+    terminal::enable_raw_mode()?;
+    
+    println!("Enter text (type 'q' on a line by itself to quit):\r");
+    
+    loop {
+        let input = read_line()?;
+        println!("You typed: {}\r", input);
+        
+        if input == "q" {
+            break;
+        }
+    }
+
+    terminal::disable_raw_mode()
 }
